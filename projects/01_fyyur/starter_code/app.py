@@ -14,6 +14,9 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from flask_wtf.csrf import CSRFProtect
+from datetime import datetime 
+from sqlalchemy.sql.functions import func
+from itertools import groupby
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -56,8 +59,9 @@ class Venue(db.Model):
     genres = db.Column(db.ARRAY(db.String(120), dimensions=1)) # genres separated by comma, items imploded
     shows = db.relationship("Show", backref='venue', lazy=True)
 
+    # for debug
     def __repr__(self):
-        return '{}-{}-{}-{}'.format(self.id, self.name, self.city, self.sate)
+        return 'Venue: {}-{}-{}-{}'.format(self.id, self.name, self.city, self.sate)
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -75,6 +79,10 @@ class Artist(db.Model):
     seeking_description = db.Column(db.Text)
     shows = db.relationship("Show", backref='artist', lazy=True)
 
+    # for debug
+    def __repr__(self):
+        return 'Artist: {}-{}-{}-{}'.format(self.id, self.name, self.city, self.sate)
+
 class Show(db.Model):
     __tablename__ = 'Show'
 
@@ -82,6 +90,10 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
     start_time = db.Column(db.DateTime)
+
+    # for debug
+    def __repr__(self):
+        return 'Show: artist_id: {}- venue_id: {}- start_time: {}'.format(self.artist_id, self.venue_id, self.start_time)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -111,29 +123,16 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  items = Venue.query.\
+    with_entities(Venue.city, Venue.state, Venue.id, Venue.name, func.count(Show.id).label('num_shows'))\
+    .join(Show, (Show.venue_id==Venue.id) & (Show.start_time < datetime.now()), isouter=True )\
+    .group_by(Venue).all()
+  data = []
+  func_filter =  lambda item: (item.city, item.state)
+  for key, venues in groupby(sorted(items, key= func_filter) , func_filter):
+      tmp_venue = dict(zip(['city', 'state'], key))
+      tmp_venue["venues"] = list({'id': venue.id, 'name': venue.name, 'num_upcomping_shows': venue.num_shows } for venue in venues)
+      data.append(tmp_venue)
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])

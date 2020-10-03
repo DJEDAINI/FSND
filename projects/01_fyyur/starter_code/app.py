@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
 from flask_moment import Moment
 from flask_migrate import Migrate
 import logging
@@ -93,18 +93,22 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  # shows the venue page with the given venue_id
-  venue = Venue.query.get(venue_id).__dict__
-  shows = Show.query.with_entities(Show.artist_id, Show.start_time, Artist.name.label('artist_name'), Artist.image_link.label('artist_image_link'))\
-    .filter(Show.venue_id==venue_id)\
-    .join(Venue, Venue.id==Show.venue_id, isouter=True)\
-    .join(Artist, Artist.id==Show.artist_id, isouter=True)\
-    .all()
-  venue['upcoming_shows'] = list(filter(lambda show: show.start_time < datetime.now(), shows))
-  venue['past_shows'] = list(filter(lambda show: show.start_time >= datetime.now(), shows))
-  venue['upcoming_shows_count'] = len(venue['upcoming_shows'])
-  venue['past_shows_count'] = len(venue['past_shows'])
-  return render_template('pages/show_venue.html', venue=venue)
+  try:
+    # shows the venue page with the given venue_id
+    venue = Venue.query.get(venue_id).__dict__
+    shows = Show.query.with_entities(Show.artist_id, Show.start_time, Artist.name.label('artist_name'), Artist.image_link.label('artist_image_link'))\
+      .filter(Show.venue_id==venue_id)\
+      .join(Venue, Venue.id==Show.venue_id, isouter=True)\
+      .join(Artist, Artist.id==Show.artist_id, isouter=True)\
+      .all()
+    venue['upcoming_shows'] = list(filter(lambda show: show.start_time < datetime.now(), shows))
+    venue['past_shows'] = list(filter(lambda show: show.start_time >= datetime.now(), shows))
+    venue['upcoming_shows_count'] = len(venue['upcoming_shows'])
+    venue['past_shows_count'] = len(venue['past_shows'])
+    return render_template('pages/show_venue.html', venue=venue)
+  except Exception as e:
+    flash('Resource not found.', 'danger')
+    return redirect(url_for('index'))
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -123,10 +127,10 @@ def create_venue_submission():
     db.session.add(venue)
     db.session.commit()
     # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    flash('Venue ' + request.form['name'] + ' was successfully created!', 'info')
     return redirect(url_for('index'))
   else:
-    flash('An error occurred. Venue ' +  request.form['name'] + ' could not be listed.', 'error')
+    flash('An error occurred. Venue ' +  request.form['name'] + ' could not be created.', 'danger')
     return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/<venue_id>/delete', methods=['POST'])
@@ -134,11 +138,11 @@ def delete_venue(venue_id):
   try:
     db.session.query(Venue).filter(Venue.id==venue_id).delete()
     db.session.commit()
-    flash('Venue ' + venue_id + ' was successfully deleted!')
+    flash('Venue ' + venue_id + ' was successfully deleted!', 'info')
   except Exception as e:
     db.session.rollback()
     db.session.flush() # for resetting non-commited .add()
-    flash('An error occurred. Venue ' +  venue_id + ' could not be deleted.', 'error')
+    flash('An error occurred. Venue ' +  venue_id + ' could not be deleted.', 'danger')
   finally:
     return redirect(url_for('index'))
 
@@ -165,17 +169,21 @@ def search_artists():
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-  artist = Artist.query.get(artist_id).__dict__
-  shows = Show.query.with_entities(Show.venue_id, Show.start_time, Venue.name.label('venue_name'), Venue.image_link.label('venue_image_link'))\
-    .filter(Show.artist_id==artist_id)\
-    .join(Venue, Venue.id==Show.venue_id, isouter=True)\
-    .join(Artist, Artist.id==Show.artist_id, isouter=True)\
-    .all()
-  artist['upcoming_shows'] = list(filter(lambda show: show.start_time < datetime.now(), shows))
-  artist['past_shows'] = list(filter(lambda show: show.start_time >= datetime.now(), shows))
-  artist['upcoming_shows_count'] = len(artist['upcoming_shows'])
-  artist['past_shows_count'] = len(artist['past_shows'])
-  return render_template('pages/show_artist.html', artist=artist)
+  try:
+    artist = Artist.query.get(artist_id).__dict__
+    shows = Show.query.with_entities(Show.venue_id, Show.start_time, Venue.name.label('venue_name'), Venue.image_link.label('venue_image_link'))\
+      .filter(Show.artist_id==artist_id)\
+      .join(Venue, Venue.id==Show.venue_id, isouter=True)\
+      .join(Artist, Artist.id==Show.artist_id, isouter=True)\
+      .all()
+    artist['upcoming_shows'] = list(filter(lambda show: show.start_time < datetime.now(), shows))
+    artist['past_shows'] = list(filter(lambda show: show.start_time >= datetime.now(), shows))
+    artist['upcoming_shows_count'] = len(artist['upcoming_shows'])
+    artist['past_shows_count'] = len(artist['past_shows'])
+    return render_template('pages/show_artist.html', artist=artist)
+  except Exception as e:
+    flash('Resource not found.', 'danger')
+    return redirect(url_for('index'))
 
 #  Update
 #  ----------------------------------------------------------------
@@ -193,10 +201,10 @@ def edit_artist_submission(artist_id):
     form.populate_obj(artist)
     db.session.commit()
     # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully updated!')
+    flash('Artist ' + request.form['name'] + ' was successfully updated!', 'info')
     return redirect(url_for('show_artist', artist_id=artist_id))
   else:
-    flash('An error occurred. Artist ' +  request.form['name'] + ' could not be updated.', 'error')
+    flash('An error occurred. Artist ' +  request.form['name'] + ' could not be updated.', 'danger')
     return redirect(url_for('edit_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
@@ -213,10 +221,10 @@ def edit_venue_submission(venue_id):
     form.populate_obj(venue)
     db.session.commit()
     # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully updated!')
+    flash('Venue ' + request.form['name'] + ' was successfully updated!', 'info')
     return redirect(url_for('show_venue', venue_id=venue_id))
   else:
-    flash('An error occurred. Venue ' +  request.form['name'] + ' could not be updated.', 'error')
+    flash('An error occurred. Venue ' +  request.form['name'] + ' could not be updated.', 'danger')
     return redirect(url_for('edit_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -236,10 +244,10 @@ def create_artist_submission():
     db.session.add(artist)
     db.session.commit()
     # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    flash('Artist ' + request.form['name'] + ' was successfully created!', 'info')
     return redirect(url_for('index'))
   else:
-    flash('An error occurred. artist ' +  request.form['name'] + ' could not be listed.', 'error')
+    flash('An error occurred. artist ' +  request.form['name'] + ' could not be created.', 'danger')
     return render_template('forms/new_artist.html', form=form)
 
 
@@ -271,10 +279,10 @@ def create_show_submission():
     db.session.add(show)
     db.session.commit()
     # on successful db insert, flash success
-    flash('Show was successfully listed!')
+    flash('Show was successfully created!', 'info')
     return redirect(url_for('index'))
   else:
-    flash('An error occurred. Show could not be listed.', 'error')
+    flash('An error occurred. Show could not be created.', 'danger')
     return render_template('forms/new_show.html', form=form)
 
 @app.errorhandler(404)

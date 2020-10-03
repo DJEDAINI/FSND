@@ -97,6 +97,7 @@ def show_venue(venue_id):
   # shows the venue page with the given venue_id
   venue = Venue.query.get(venue_id).__dict__
   shows = Show.query.with_entities(Show.artist_id, Show.start_time, Artist.name.label('artist_name'), Artist.image_link.label('artist_image_link'))\
+    .filter(Show.venue_id==venue_id)\
     .join(Venue, Venue.id==Show.venue_id, isouter=True)\
     .join(Artist, Artist.id==Show.artist_id, isouter=True)\
     .all()

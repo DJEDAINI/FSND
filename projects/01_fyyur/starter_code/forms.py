@@ -197,7 +197,7 @@ class ArtistForm(Form):
         'phone'
     )
     website = StringField(
-        'image_link'
+        'website'
     )
     image_link = StringField(
         'image_link'

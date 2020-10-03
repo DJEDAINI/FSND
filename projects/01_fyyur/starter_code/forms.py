@@ -7,10 +7,12 @@ from models import *
 class ShowForm(Form):
     artist_id = SelectField(
         'artist_id',
+        coerce=int,
         choices=list(Artist.query.with_entities(Artist.id, Artist.name).all())
     )
     venue_id = SelectField(
         'venue_id',
+        coerce=int,
         choices=list(Venue.query.with_entities(Venue.id, Venue.name).all())
     )
     start_time = DateTimeField(

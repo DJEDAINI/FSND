@@ -122,13 +122,20 @@ def create_venue_form():
 def create_venue_submission():
   form = VenueForm(request.form)
   if form.validate_on_submit():
-    venue = Venue()
-    form.populate_obj(venue)
-    db.session.add(venue)
-    db.session.commit()
-    # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully created!', 'info')
-    return redirect(url_for('index'))
+    try:
+      venue = Venue()
+      form.populate_obj(venue)
+      db.session.add(venue)
+      db.session.commit()
+      # on successful db insert, flash success
+      flash('Venue ' + request.form['name'] + ' was successfully created!', 'info')
+      return redirect(url_for('index'))
+    except:
+      db.session.rollback()
+      flash('An error occurred. Venue ' +  request.form['name'] + ' could not be created.', 'danger')
+      return render_template('forms/new_venue.html', form=form)
+    finally:
+      db.session.close()
   else:
     flash('An error occurred. Venue ' +  request.form['name'] + ' could not be created.', 'danger')
     return render_template('forms/new_venue.html', form=form)
@@ -141,9 +148,9 @@ def delete_venue(venue_id):
     flash('Venue ' + venue_id + ' was successfully deleted!', 'info')
   except Exception as e:
     db.session.rollback()
-    db.session.flush() # for resetting non-commited .add()
     flash('An error occurred. Venue ' +  venue_id + ' could not be deleted.', 'danger')
   finally:
+    db.session.close()
     return redirect(url_for('index'))
 
 #  Artists
@@ -189,29 +196,44 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-  artist = Artist.query.get(artist_id)
-  form = ArtistForm(obj=artist)
-  return render_template('forms/edit_artist.html', form=form, artist=artist)
+  try:
+    artist = Artist.query.get(artist_id)
+    form = ArtistForm(obj=artist)
+    return render_template('forms/edit_artist.html', form=form, artist=artist)
+  except Exception as e:
+    flash('Resource not found.', 'danger')
+    return redirect(url_for('index'))
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
   form = ArtistForm(request.form)
   if form.validate_on_submit():
-    artist = Artist.query.get(artist_id)
-    form.populate_obj(artist)
-    db.session.commit()
-    # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully updated!', 'info')
-    return redirect(url_for('show_artist', artist_id=artist_id))
+    try:
+      artist = Artist.query.get(artist_id)
+      form.populate_obj(artist)
+      db.session.commit()
+      # on successful db insert, flash success
+      flash('Artist ' + request.form['name'] + ' was successfully updated!', 'info')
+      return redirect(url_for('show_artist', artist_id=artist_id))
+    except:
+      db.session.rollback()
+      flash('An error occurred. Artist ' +  request.form['name'] + ' could not be created.', 'danger')
+      return redirect(url_for('edit_artist', artist_id=artist_id))
+    finally:
+      db.session.close()
   else:
     flash('An error occurred. Artist ' +  request.form['name'] + ' could not be updated.', 'danger')
     return redirect(url_for('edit_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
-  venue = Venue.query.get(venue_id)
-  form = VenueForm(obj=venue)
-  return render_template('forms/edit_venue.html', form=form, venue=venue)
+  try:
+    venue = Venue.query.get(venue_id)
+    form = VenueForm(obj=venue)
+    return render_template('forms/edit_venue.html', form=form, venue=venue)
+  except Exception as e:
+    flash('Resource not found.', 'danger')
+    return redirect(url_for('index'))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
@@ -239,13 +261,20 @@ def create_artist_form():
 def create_artist_submission():
   form = ArtistForm(request.form)
   if form.validate_on_submit():
-    artist = Artist()
-    form.populate_obj(artist)
-    db.session.add(artist)
-    db.session.commit()
-    # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully created!', 'info')
-    return redirect(url_for('index'))
+    try:
+      artist = Artist()
+      form.populate_obj(artist)
+      db.session.add(artist)
+      db.session.commit()
+      # on successful db insert, flash success
+      flash('Artist ' + request.form['name'] + ' was successfully created!', 'info')
+      return redirect(url_for('index'))
+    except:
+      db.session.rollback()
+      flash('An error occurred. artist ' +  request.form['name'] + ' could not be created.', 'danger')
+      return render_template('forms/new_artist.html', form=form)
+    finally:
+      db.session.close()
   else:
     flash('An error occurred. artist ' +  request.form['name'] + ' could not be created.', 'danger')
     return render_template('forms/new_artist.html', form=form)
@@ -274,13 +303,21 @@ def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   form = ShowForm(request.form)
   if form.validate_on_submit():
-    show = Show()
-    form.populate_obj(show)
-    db.session.add(show)
-    db.session.commit()
-    # on successful db insert, flash success
-    flash('Show was successfully created!', 'info')
-    return redirect(url_for('index'))
+    try:
+      show = Show()
+      form.populate_obj(show)
+      db.session.add(show)
+      db.session.commit()
+      # on successful db insert, flash success
+      flash('Show was successfully created!', 'info')
+      return redirect(url_for('index'))
+    except:
+      db.session.rollback()
+      flash('An error occurred. Show could not be created.', 'danger')
+      return render_template('forms/new_show.html', form=form)
+    finally:
+      db.session.close()
+
   else:
     flash('An error occurred. Show could not be created.', 'danger')
     return render_template('forms/new_show.html', form=form)

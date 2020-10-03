@@ -7,7 +7,6 @@ import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
@@ -17,17 +16,13 @@ from flask_wtf.csrf import CSRFProtect
 from datetime import datetime 
 from sqlalchemy.sql.functions import func
 from itertools import groupby
+from models import *
 
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
 
-app = Flask(__name__)
 moment = Moment(app)
-app.config.from_object('config')
-
-# connect to a local postgresql database
-db = SQLAlchemy(app)
 
 # handles database migrations through Flask-Migrate
 migrate = Migrate(app, db)
@@ -37,63 +32,6 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 csrf = CSRFProtect(app)
 csrf.init_app(app)
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean)
-    seeking_description = db.Column(db.Text)
-    genres = db.Column(db.ARRAY(db.String(120), dimensions=1)) # genres separated by comma, items imploded
-    shows = db.relationship("Show", backref='venue', lazy=True)
-
-    # for debug
-    def __repr__(self):
-        return 'Venue: {}-{}-{}-{}'.format(self.id, self.name, self.city, self.sate)
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String(120), dimensions=1)) # genres separated by comma, items imploded
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean)
-    seeking_description = db.Column(db.Text)
-    shows = db.relationship("Show", backref='artist', lazy=True)
-
-    # for debug
-    def __repr__(self):
-        return 'Artist: {}-{}-{}-{}'.format(self.id, self.name, self.city, self.sate)
-
-class Show(db.Model):
-    __tablename__ = 'Show'
-
-    id = db.Column(db.Integer, primary_key=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
-    start_time = db.Column(db.DateTime)
-
-    # for debug
-    def __repr__(self):
-        return 'Show: artist_id: {}- venue_id: {}- start_time: {}'.format(self.artist_id, self.venue_id, self.start_time)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -443,14 +381,18 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
-
-  # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  form = ShowForm(request.form)
+  if form.validate_on_submit():
+    show = Show()
+    form.populate_obj(show)
+    db.session.add(show)
+    db.session.commit()
+    # on successful db insert, flash success
+    flash('Show was successfully listed!')
+    return redirect(url_for('index'))
+  else:
+    flash('An error occurred. Show could not be listed.', 'error')
+    return render_template('forms/new_show.html', form=form)
 
 @app.errorhandler(404)
 def not_found_error(error):

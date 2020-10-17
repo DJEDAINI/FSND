@@ -75,11 +75,19 @@ def create_app(test_config=None):
   '''
   @app.route("/api/v1/questions/<int:question_id>", methods=['DELETE'])
   def delete_question(question_id):
-      questions = Question.query.get(question_id).delete()
+    try:
+      question = Question.query.get(question_id)
+      if question is None:
+        abort(404)
+
+      question.delete()
+
       return jsonify({
         'status': 'success',
         'message': 'question deleted with success',
       })
+    except:
+      abort(422)
 
   '''
   POST a new question, 
@@ -93,12 +101,22 @@ def create_app(test_config=None):
   @app.route("/api/v1/questions", methods=['POST'])
   def create_question():
     data = request.get_json(force=True)
-    question = Question(data['question'], data['answer'], data['category'], data['difficulty'])
-    question.insert()
-    return jsonify({
-      'status': 'success',
-      'message': 'question created with success',
-    })
+
+    question = data.get('question', None)
+    answer = data.get('answer', None)
+    category = data.get('category', None)
+    difficulty = data.get('difficulty', None)
+
+    try:
+      question = Question(question=question, answer=answer, category=category, difficulty=difficulty)
+      question.insert()
+
+      return jsonify({
+        'status': 'success',
+        'message': 'question created with success',
+      })
+    except:
+      abort(422)
 
   '''
   POST request to get questions based on a search term. 
@@ -113,7 +131,7 @@ def create_app(test_config=None):
   def search_questions():
     page = request.args.get('page', 1, type=int)
     data = request.get_json(force=True)
-    search_for = data['searchTerm']
+    search_for = data.get('searchTerm', None)
     questions = Question.query.filter(Question.question.ilike('%' + search_for + '%')).paginate(page, QUESTIONS_PER_PAGE, False)
     formatted_questions = [question.format() for question in questions.items]
     return jsonify({
@@ -132,15 +150,22 @@ def create_app(test_config=None):
   @app.route("/api/v1/categories/<int:category_id>/questions")
   def questions_by_category(category_id):
     page = request.args.get('page', 1, type=int)
-    category = Category.query.get(category_id).format()
-    questions = Question.query.filter(Question.category==category_id).paginate(page, QUESTIONS_PER_PAGE, False)
-    formatted_questions = [question.format() for question in questions.items]
-    return jsonify({
-      'status': 'success',
-      'total_questions': questions.total,
-      'questions': formatted_questions,
-      'current_category': category
-    })
+    try:
+      category = Category.query.get(category_id)
+      if category is None:
+        abort(404)
+
+      questions = Question.query.filter(Question.category==category_id).paginate(page, QUESTIONS_PER_PAGE, False)
+      formatted_questions = [question.format() for question in questions.items]
+
+      return jsonify({
+        'status': 'success',
+        'total_questions': questions.total,
+        'questions': formatted_questions,
+        'current_category': category.format()
+      })
+    except:
+      abort(404)
 
 
   '''
@@ -157,8 +182,8 @@ def create_app(test_config=None):
   def play_quiz():
     page = request.args.get('page', 1, type=int)
     data = request.get_json(force=True)
-    previous_questions = data['previous_questions']
-    category = data['quiz_category']
+    previous_questions = data.get('previous_questions', None)
+    category = data.get('quiz_category', None)
     if category['id'] != 0:
       questions = Question.query.filter(Question.category==category['id']).paginate(page, QUESTIONS_PER_PAGE, False)
     else:
@@ -170,10 +195,24 @@ def create_app(test_config=None):
     })
 
   '''
-  @TODO: 
-  Create error handlers for all expected errors 
+  Error handlers for all expected errors 
   including 404 and 422. 
   '''
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      "success": False, 
+      "error": 404,
+      "message": "Not found"
+      }), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      "success": False, 
+      "error": 422,
+      "message": "unprocessable"
+      }), 422
   
   return app
 

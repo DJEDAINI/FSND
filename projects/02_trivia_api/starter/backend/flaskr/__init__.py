@@ -144,8 +144,7 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
+  POST endpoint to get questions to play the quiz. 
   This endpoint should take category and previous question parameters 
   and return a random questions within the given category, 
   if provided, and that is not one of the previous questions. 
@@ -154,6 +153,21 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route("/api/v1/quizzes", methods=['POST'])
+  def play_quiz():
+    page = request.args.get('page', 1, type=int)
+    data = request.get_json(force=True)
+    previous_questions = data['previous_questions']
+    category = data['quiz_category']
+    if category['id'] != 0:
+      questions = Question.query.filter(Question.category==category['id']).paginate(page, QUESTIONS_PER_PAGE, False)
+    else:
+      questions = Question.query.paginate(page, QUESTIONS_PER_PAGE, False)
+    formatted_questions = [question.format() for question in questions.items if question.id not in previous_questions]
+    return jsonify({
+      'status': 'success',
+      'question': random.choice(formatted_questions + [None])
+    })
 
   '''
   @TODO: 

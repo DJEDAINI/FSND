@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
@@ -43,8 +43,7 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
+  Paginate questions, 
   including pagination (every 10 questions). 
   This endpoint should return a list of questions, 
   number of total questions, current category, categories. 
@@ -54,7 +53,20 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
-
+  @app.route("/api/v1/questions")
+  def get_questions():
+    page = request.args.get('page', 1, type=int)
+    questions = Question.query.paginate(page, QUESTIONS_PER_PAGE, False)
+    formatted_questions = [question.format() for question in questions.items]
+    categories = Category.query.all()
+    formatted_categories = [category.format() for category in categories]
+    return jsonify({
+      'status': 'success',
+      'total_questions': questions.total,
+      'questions': formatted_questions,
+      'categories': formatted_categories
+    })
+  
   '''
   @TODO: 
   Create an endpoint to DELETE question using a question ID. 

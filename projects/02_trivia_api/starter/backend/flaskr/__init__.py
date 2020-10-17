@@ -184,24 +184,38 @@ def create_app(test_config=None):
     data = request.get_json(force=True)
     previous_questions = data.get('previous_questions', None)
     category = data.get('quiz_category', None)
-    if category['id'] != 0:
-      questions = Question.query.filter(Question.category==category['id']).paginate(page, QUESTIONS_PER_PAGE, False)
-    else:
-      questions = Question.query.paginate(page, QUESTIONS_PER_PAGE, False)
-    formatted_questions = [question.format() for question in questions.items if question.id not in previous_questions]
-    return jsonify({
-      'status': 'success',
-      'question': random.choice(formatted_questions + [None])
-    })
+    try:
+      if type(previous_questions) != list or type(category) != dict:
+        abort(400)
+
+      if category['id'] != 0:
+        questions = Question.query.filter(Question.category==category['id']).paginate(page, QUESTIONS_PER_PAGE, False)
+      else:
+        questions = Question.query.paginate(page, QUESTIONS_PER_PAGE, False)
+      formatted_questions = [question.format() for question in questions.items if question.id not in previous_questions]
+      return jsonify({
+        'status': 'success',
+        'question': random.choice(formatted_questions)
+      })
+    except:
+      abort(400)
 
   '''
   Error handlers for all expected errors 
   including 404 and 422. 
   '''
+  @app.errorhandler(400)
+  def not_found(error):
+    return jsonify({
+      "status": "failed", 
+      "error": 400,
+      "message": "Bad request"
+      }), 400
+
   @app.errorhandler(404)
   def not_found(error):
     return jsonify({
-      "success": False, 
+      "status": "failed", 
       "error": 404,
       "message": "Not found"
       }), 404
@@ -209,7 +223,7 @@ def create_app(test_config=None):
   @app.errorhandler(422)
   def unprocessable(error):
     return jsonify({
-      "success": False, 
+      "status": "failed", 
       "error": 422,
       "message": "unprocessable"
       }), 422

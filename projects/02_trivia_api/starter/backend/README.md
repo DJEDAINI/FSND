@@ -36,6 +36,13 @@ With Postgres running, restore a database using the trivia.psql file provided. F
 psql trivia < trivia.psql
 ```
 
+## Initialise environment variables
+From the backend folder in terminal run:
+```bash
+cp .sample .env
+```
+Then change the env varibles with your database configuration to make sure that connection to your database with be succeeded
+
 ## Running the server
 
 From within the `backend` directory first ensure you are working using your created virtual environment.
@@ -51,6 +58,8 @@ flask run
 Setting the `FLASK_ENV` variable to `development` will detect file changes and restart the server automatically.
 
 Setting the `FLASK_APP` variable to `flaskr` directs flask to use the `flaskr` directory and the `__init__.py` file to find the application. 
+
+Or you can initialise these FLASK env variables directly within the dot-file: .falskenv
 
 ## Tasks
 
@@ -68,24 +77,184 @@ One note before you delve into your tasks: for each endpoint you are expected to
 
 REVIEW_COMMENT
 ```
-This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
+BASE_URL = http://127.0.0.1:5000/api/v1
 
 Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/questions'
+GET '/categories/:id/questions'
+POST '/questions/'
+POST '/questions/search'
+DELETE 'questions/:id'
+POST '/quizzes'
 
 GET '/categories'
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Fetches a list of categories objects, has the id attribute and the name of the category
 - Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+- Returns: An object with a two keys, id and type of a category, that contains a object of id: category id and type: cateogry name . 
+- Sample request: curl http://127.0.0.1:5000/api/v1/categories
+{
+    "status": "success",
+    "categories": {
+        {
+            id: 1,
+            type: "Science",
+        },
+        {
+            id: 2,
+            type: "Art",
+        },
+        {
+            id: 3,
+            type: "Geography",
+        },
+        {
+            id: 4,
+            type: "History",
+        },
+        {
+            id: 5,
+            type: "Entertainment",
+        },
+        {
+            id: 5,
+            type: "Sports",
+        }
+    }
+}
+
+GET '/questions'
+- Fetches a list of paginated questions objects, also identifying the total of questions and the categories list
+- Request Arguments: Optional query parameter: page: to identifiy the specified page of questioned to be returned
+- Returns: An list of questions object, categories list object, and the total_questions attribute. 
+- Sample request: curl http://127.0.0.1:5000/api/v1/questions
+{
+    "status": "success",
+    "questions": {
+        {
+            "answer": "A1",
+            "category": 1,
+            "difficulty": 1,
+            "id": 1,
+            "question": "Q1"
+        }
+        {
+            "answer": "A2",
+            "category": 2,
+            "difficulty": 1,
+            "id": 2,
+            "question": "Q2"
+        },
+    },
+    "total_questions": 2,
+    "categories": {
+        {
+            id: 1,
+            type: "Science",
+        },
+        {
+            id: 2,
+            type: "Art",
+        },
+        {
+            id: 3,
+            type: "Geography",
+        },
+        {
+            id: 4,
+            type: "History",
+        },
+        {
+            id: 5,
+            type: "Entertainment",
+        },
+        {
+            id: 5,
+            type: "Sports",
+        }
+    }
+}
+
+GET '/categories/:id/questions'
+- Fetches a list of questions related to specific category
+- Request Arguments: id: identify the cateogry id, and optional parameter page: to paginate to questions list
+- Returns: An list of questions object, current_category identified by the category id specified in request parameter, and the total_questions attribute. 
+- Sample request: curl http://127.0.0.1:5000/api/v1/categories/1/questions
+{
+    "status": "success",
+    "current_category": {
+        {
+            id: 1,
+            type: "Science",
+        }
+    },
+    "questions": {
+        {
+            "answer": "A1",
+            "category": 1,
+            "difficulty": 1,
+            "id": 1,
+            "question": "Q1"
+        }
+    },
+    "total_questions": 1,
+}
+
+POST '/questions'
+- Create a new question
+- Body Arguments: question: question string, answer: the answer string of the question, category: category id related to the question to be inserted, difficulty: integer to specify the difficulty degree of the question from 1 to 5.
+- Returns: message attribute to inform the user that to question has been inserted with success, message: question created with success. 
+- Sample request: curl -X POST -H "Content-Type: application/json" -d '{ "question": "Q1", "answer": "A1", "category": 1, "difficulty": 1}' http://127.0.0.1:5000/api/v1/questions
+{
+    "status": "success",
+    "message": "question created with success"
+}
+
+POST '/questions/search'
+- Search for questions by any phrase. The questions list will include only question that include that string within their question
+- Body Arguments: searchTerm: to specifiy the search phrase to search with in the questions list.
+- Returns: a list of questions that contain that string within the question. 
+- Sample request: curl -X POST -H "Content-Type: application/json" -d '{ "searchTerm": "title"} ' http://127.0.0.1:5000/api/v1/questions/search
+{
+    "status": "success",
+    "questions": {
+        {
+            "answer": "answer title",
+            "category": 1,
+            "difficulty": 1,
+            "id": 1,
+            "question": "title of the question"
+        }
+    },
+    "total_questions": 1,
+}
+
+DELETE '/questions/:id'
+- Delete a question with a specific id attribute
+- Request Arguments: id: the id of the question to be removed.
+- Returns: message attribute to inform the user that to question has been deleted with success, message: question created with success. 
+- Sample request: curl -X DELETE http://127.0.0.1:5000/api/v1/questions/1
+{
+  "status": "success",
+  "message": "question deleted with success"
+}
+
+POST '/quizzes'
+- Play the quiz, return a random question related to specific category, and ensure that the id of the returned question is not appeared in the previous questions list.
+- Body Arguments: previous_questions: array of ids of previous returned questions, quiz_category: category object of questions that you want to play the quiz with Or you can set the id equal to 0 if you want to select all the categories.
+- Returns: the next question of the quiz within the specified category. 
+- Sample request: curl -X POST -H "Content-Type: application/json" -d '{ "previous_questions": [1,2], "quiz_category": { "id": 1, "type": "science"}}' http://127.0.0.1:5000/api/v1/quizzes
+- Another Sample request: curl -X POST -H "Content-Type: application/json" -d '{ "previous_questions": [1,2], "quiz_category": { "id": 0}}' http://127.0.0.1:5000/api/v1/quizzes
+{
+  "status": "success",
+  "question": {
+    "answer": "Answer-3",
+    "category": 1,
+    "difficulty": 2,
+    "id": 3,
+    "question": "Question-3"
+  }
+}
 
 ```
 

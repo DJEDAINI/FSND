@@ -87,7 +87,7 @@ def create_app(test_config=None):
         'message': 'question deleted with success',
       })
     except:
-      abort(422)
+      abort(404)
 
   '''
   POST a new question, 
@@ -132,7 +132,7 @@ def create_app(test_config=None):
     page = request.args.get('page', 1, type=int)
     data = request.get_json(force=True)
     search_for = data.get('searchTerm', None)
-    questions = Question.query.filter(Question.question.ilike('%' + search_for + '%')).paginate(page, QUESTIONS_PER_PAGE, False)
+    questions = Question.query.filter(Question.question.ilike("%{}%".format(search_for))).paginate(page, QUESTIONS_PER_PAGE, False)
     formatted_questions = [question.format() for question in questions.items]
     return jsonify({
       'status': 'success',
@@ -227,6 +227,14 @@ def create_app(test_config=None):
       "error": 422,
       "message": "unprocessable"
       }), 422
+
+  @app.errorhandler(405)
+  def unprocessable(error):
+    return jsonify({
+      "status": "failed", 
+      "error": 405,
+      "message": "Method not allowed"
+      }), 405
   
   return app
 

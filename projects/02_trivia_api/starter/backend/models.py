@@ -3,9 +3,13 @@ from sqlalchemy import Column, String, Integer, create_engine, ForeignKey
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
 import json
+from dotenv import load_dotenv, find_dotenv
 
-database_name = "trivia"
-database_path = "postgresql://{}@{}/{}".format('postgres:toor', 'localhost:5432', database_name)
+# load environment variables
+load_dotenv(find_dotenv())
+# Secret variables stored in .flaskenv file
+database_path = "postgresql://{}:{}@{}:{}/{}".format(os.getenv("DB_USERNAME"), os.getenv("DB_PASSWD"), os.getenv("DB_HOST"), os.getenv("DB_PORT"), os.getenv("DB_NAME"))
+print(database_path)
 
 db = SQLAlchemy()
 

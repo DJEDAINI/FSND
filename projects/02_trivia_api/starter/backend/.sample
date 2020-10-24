@@ -1,0 +1,14 @@
+# Database configuration 
+DB_NAME=database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=username
+DB_PASSWD=password
+
+
+# Database test env configuration
+TEST_DB_NAME=database
+TEST_DB_HOST=localhost
+TEST_DB_PORT=5432
+TEST_DB_USERNAME=username
+TEST_DB_PASSWD=password

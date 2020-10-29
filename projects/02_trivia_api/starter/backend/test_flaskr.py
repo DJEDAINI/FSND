@@ -37,6 +37,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], 'success')
 
+    def test_405_get_questions(self):
+        """Test list questions Error handling endpoint """
+        res = self.client().put('/api/v1/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['status'], 'failed')
+
     def test_get_categories(self):
         """Test list categories endpoint """
         res = self.client().get('/api/v1/categories')
@@ -44,6 +52,14 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], 'success')
+
+    def test_405_get_categories(self):
+        """Test list categories Error handling endpoint """
+        res = self.client().put('/api/v1/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['status'], 'failed')
 
     def test_create_question(self):
         """Test create question endpoint """
@@ -65,13 +81,14 @@ class TriviaTestCase(unittest.TestCase):
     def test_422_create_question(self):
         """Test create question Error handling endpoint """
 
-        res = self.client().post("/api/v1/questions", json={'question': 'Unittest question', 'answer': 'Unittest answer' } )
+        res = self.client().post("/api/v1/questions", json={'question': 'Unittest question' } )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data['status'], 'failed')
 
     def test_delete_question(self):
         """Test delete question endpoint """
+        question = self.client().post("/api/v1/questions", json={'question': 'Unittest question', 'answer': 'Unittest answer', 'category': 1, 'difficulty': 1 } )
         res = self.client().get('/api/v1/questions')
         questions = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
@@ -96,18 +113,27 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_search_questions(self):
         """Test search questions endpoint """
+        res = self.client().post("/api/v1/questions", json={'question': 'ThisQuestionToTestUnittest', 'answer': 'Unittest answer', 'category': 1, 'difficulty': 1 } )
 
-        res = self.client().post("/api/v1/questions/search", json={'searchTerm': 'unit' } )
+        res = self.client().post("/api/v1/questions/search", json={'searchTerm': 'ThisQuestionToTestUnittest' } )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], 'success')
-        self.assertEqual(data['total_questions'], 3)
+        self.assertTrue(data['total_questions'])
 
-        res = self.client().post("/api/v1/questions/search", json={'searchTerm': 'notfound' } )
+        res = self.client().post("/api/v1/questions/search", json={'searchTerm': 'fromUnitTestNotFound' } )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['total_questions'], 0)
+
+    def test_422_search_questions(self):
+        """Test search questions Error handling endpoint """
+        res = self.client().post("/api/v1/questions/search")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['status'], 'failed')
 
     def test_get_questions_by_category(self):
         """Test list questions related to specific category endpoint """
@@ -123,7 +149,8 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], 'success')
-        self.assertEqual(data['total_questions'], 3)
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['current_category'])
 
     def test__404_get_questions_by_category(self):
         """Test list questions related to specific category Erro handling endpoint """

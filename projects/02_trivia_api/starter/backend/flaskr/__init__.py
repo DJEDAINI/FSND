@@ -84,6 +84,7 @@ def create_app(test_config=None):
 
       return jsonify({
         'status': 'success',
+        'question_id': question_id,
         'message': 'question deleted with success',
       })
     except:
@@ -101,16 +102,15 @@ def create_app(test_config=None):
   @app.route("/api/v1/questions", methods=['POST'])
   def create_question():
     data = request.get_json(force=True)
-
-    question = data.get('question', None)
-    answer = data.get('answer', None)
-    category = data.get('category', None)
-    difficulty = data.get('difficulty', None)
-
     try:
+      question = data.get('question', None)
+      answer = data.get('answer', None)
+      category = data.get('category', None)
+      difficulty = data.get('difficulty', None)
+      if (None in [question, answer, category, difficulty]):
+        abort(422)
       question = Question(question=question, answer=answer, category=category, difficulty=difficulty)
       question.insert()
-
       return jsonify({
         'status': 'success',
         'message': 'question created with success',
@@ -130,15 +130,21 @@ def create_app(test_config=None):
   @app.route("/api/v1/questions/search", methods=['POST'])
   def search_questions():
     page = request.args.get('page', 1, type=int)
-    data = request.get_json(force=True)
-    search_for = data.get('searchTerm', None)
-    questions = Question.query.filter(Question.question.ilike("%{}%".format(search_for))).paginate(page, QUESTIONS_PER_PAGE, False)
-    formatted_questions = [question.format() for question in questions.items]
-    return jsonify({
-      'status': 'success',
-      'total_questions': questions.total,
-      'questions': formatted_questions,
-    })
+    try:
+      data = request.get_json(force=True)
+      search_for = data.get('searchTerm', None)
+      if search_for is None:
+        abort(422)
+      questions = Question.query.filter(Question.question.ilike(
+        "%{}%".format(search_for))).paginate(page, QUESTIONS_PER_PAGE, False)
+      formatted_questions = [question.format() for question in questions.items]
+      return jsonify({
+        'status': 'success',
+        'total_questions': questions.total,
+        'questions': formatted_questions,
+      })
+    except:
+      abort(422)
 
   '''
   GET questions based on category. 
@@ -193,9 +199,13 @@ def create_app(test_config=None):
       else:
         questions = Question.query.paginate(page, QUESTIONS_PER_PAGE, False)
       formatted_questions = [question.format() for question in questions.items if question.id not in previous_questions]
+      if formatted_questions:
+        quiz_question = random.choice(formatted_questions)
+      else:
+        quiz_question = None
       return jsonify({
         'status': 'success',
-        'question': random.choice(formatted_questions)
+        'question': quiz_question
       })
     except:
       abort(400)
@@ -205,7 +215,7 @@ def create_app(test_config=None):
   including 404 and 422. 
   '''
   @app.errorhandler(400)
-  def not_found(error):
+  def bad_request(error):
     return jsonify({
       "status": "failed", 
       "error": 400,
@@ -229,12 +239,20 @@ def create_app(test_config=None):
       }), 422
 
   @app.errorhandler(405)
-  def unprocessable(error):
+  def not_allowed(error):
     return jsonify({
       "status": "failed", 
       "error": 405,
       "message": "Method not allowed"
       }), 405
+
+  @app.errorhandler(500)
+  def server_error(error):
+    return jsonify({
+      "status": "failed", 
+      "error": 500,
+      "message": "Internal Server Error"
+      }), 500
   
   return app
 

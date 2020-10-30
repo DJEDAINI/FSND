@@ -161,10 +161,9 @@ class TriviaTestCase(unittest.TestCase):
 
 
     def test_play_quiz(self):
-        """Test list categories endpoint """
+        """Test Playing quiz endpoint """
         res = self.client().post('/api/v1/quizzes', json={ 'previous_questions': [1,2], 'quiz_category': {'id': 1, 'type': 'science'} })
         data = json.loads(res.data)
-
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], 'success')
         self.assertTrue(data['question'])

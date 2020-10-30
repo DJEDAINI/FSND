@@ -142,7 +142,6 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], 'success')
-        self.assertEqual(data['total_questions'], 0)
 
         res = self.client().get('/api/v1/categories/1/questions')
         data = json.loads(res.data)
@@ -152,7 +151,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_questions'])
         self.assertTrue(data['current_category'])
 
-    def test__404_get_questions_by_category(self):
+    def test_404_get_questions_by_category(self):
         """Test list questions related to specific category Erro handling endpoint """
         res = self.client().get('/api/v1/categories/100/questions')
         data = json.loads(res.data)

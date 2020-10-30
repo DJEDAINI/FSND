@@ -8,13 +8,15 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
 
   '''
-  Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+  Set up CORS. Allow '*' for origins.
+  Delete the sample route after completing the TODOs
   '''
   CORS(app)
 
@@ -41,7 +43,6 @@ def create_app(test_config=None):
       'categories': formatted_categories
     })
 
-
   '''
   Paginate questions, 
   including pagination (every 10 questions). 
@@ -66,7 +67,7 @@ def create_app(test_config=None):
       'questions': formatted_questions,
       'categories': formatted_categories
     })
-  
+
   '''
   DELETE question using a question ID. 
 
@@ -161,7 +162,8 @@ def create_app(test_config=None):
       if category is None:
         abort(404)
 
-      questions = Question.query.filter(Question.category==category_id).paginate(page, QUESTIONS_PER_PAGE, False)
+      questions = Question.query.filter(Question.category==category_id)\
+        .paginate(page, QUESTIONS_PER_PAGE, False)
       formatted_questions = [question.format() for question in questions.items]
 
       return jsonify({
@@ -195,10 +197,12 @@ def create_app(test_config=None):
         abort(400)
 
       if category['id'] != 0:
-        questions = Question.query.filter(Question.category==category['id']).paginate(page, QUESTIONS_PER_PAGE, False)
+        questions = Question.query.filter(Question.category==category['id'])\
+            .paginate(page, QUESTIONS_PER_PAGE, False)
       else:
         questions = Question.query.paginate(page, QUESTIONS_PER_PAGE, False)
-      formatted_questions = [question.format() for question in questions.items if question.id not in previous_questions]
+        formatted_questions = [question.format() for question in questions.items 
+            if question.id not in previous_questions]
       if formatted_questions:
         quiz_question = random.choice(formatted_questions)
       else:
@@ -253,7 +257,5 @@ def create_app(test_config=None):
       "error": 500,
       "message": "Internal Server Error"
       }), 500
-  
-  return app
 
-    
+  return app

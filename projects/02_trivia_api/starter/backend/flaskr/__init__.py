@@ -188,21 +188,17 @@ def create_app(test_config=None):
   '''
   @app.route("/api/v1/quizzes", methods=['POST'])
   def play_quiz():
-    page = request.args.get('page', 1, type=int)
     data = request.get_json(force=True)
     previous_questions = data.get('previous_questions', None)
     category = data.get('quiz_category', None)
     try:
       if type(previous_questions) != list or type(category) != dict:
         abort(400)
-
       if category['id'] != 0:
-        questions = Question.query.filter(Question.category==category['id'])\
-            .paginate(page, QUESTIONS_PER_PAGE, False)
+        questions = Question.query.filter(Question.category==category['id']).all()
       else:
-        questions = Question.query.paginate(page, QUESTIONS_PER_PAGE, False)
-        formatted_questions = [question.format() for question in questions.items 
-            if question.id not in previous_questions]
+        questions = Question.query.all()
+      formatted_questions = [question.format() for question in questions if question.id not in previous_questions]
       if formatted_questions:
         quiz_question = random.choice(formatted_questions)
       else:

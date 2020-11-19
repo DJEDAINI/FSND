@@ -62,7 +62,6 @@ def get_long_repr_drinks():
     })
 
 '''
-@TODO implement endpoint
     POST /drinks
         - it should create a new row in the drinks table
         - it should require the 'post:drinks' permission
@@ -108,32 +107,33 @@ def create_drink():
 @requires_auth('patch:drinks')
 def update_drink(drink_id):
     data = request.get_json(force=True)
-    try:
-        drink = Drink.query.get(drink_id)
-        if drink is None:
-            abort(404)
 
-        title = data.get('title', None)
-        recipe = data.get('recipe', None)
-        if None in [title, recipe] or type(recipe) != list:
-            abort(422)
+    drink = Drink.query.get(drink_id)
+    if drink is None:
+        abort(404)
 
-        for item in recipe:
-            color = item['color']
-            name = item['name']
-            parts = item['parts']
-            if (None in [color, name, parts]):
-                abort(422)
-
-        drink.title = title
-        drink.recipe = json.dumps(recipe)
-        drink.update()
-        return jsonify({
-            'status': True,
-            'drinks': [drink.long()],
-        })
-    except:
+    title = data.get('title', drink.title)
+    recipe = data.get('recipe', json.loads(drink.recipe))
+    if type(recipe) != list:
         abort(422)
+    for item in recipe:
+        color = item['color']
+        name = item['name']
+        parts = item['parts']
+        if (None in [color, name, parts]):
+            abort(422)
+        
+    print(title)
+    drink.title = title
+    drink.recipe = json.dumps(recipe)
+
+    drink.update()
+    return jsonify({
+        'status': True,
+        'drinks': [drink.long()],
+    })
+    # except:
+    #     abort(422)
 
 '''
     DELETE /drinks/<id> where <id> is the existing model id
@@ -189,7 +189,6 @@ Error handler for AuthError
 '''
 @app.errorhandler(AuthError)
 def auth_error_handling(error):
-    print(error.error['description'])
     return jsonify({
         "success": False, 
         "error": error.status_code,

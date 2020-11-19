@@ -75,7 +75,7 @@ def check_permissions(permission, payload):
         raise AuthError({
             'code': 'unauthorized',
             'description': 'Unauthorized access.'
-        }, 403)
+        }, 401)
     return True
 
 '''
@@ -156,14 +156,8 @@ def requires_auth(permission=''):
         @wraps(f)
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
-            try:
-                payload = verify_decode_jwt(token)
-            except:
-                abort(401)
-
+            payload = verify_decode_jwt(token)
             check_permissions(permission, payload)
-
             return f(*args, **kwargs)
-            # return f(payload, *args, **kwargs)
         return wrapper
     return requires_auth_decorator

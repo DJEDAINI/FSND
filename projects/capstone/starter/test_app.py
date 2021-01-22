@@ -122,7 +122,7 @@ class CapstoneTestCase(unittest.TestCase):
         actors = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
 
-        res = self.client().post("/api/v1/actors", json={'name': 'Actor name - unittest', 'age': 40, gender: 'male' } )
+        res = self.client().post("/api/v1/actors", json={'name': 'Actor name - unittest', 'age': 40, 'gender': 'male' } )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], True)
@@ -141,7 +141,7 @@ class CapstoneTestCase(unittest.TestCase):
         actors = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
 
-        res = self.client().put("/api/v1/actors/{}".format( random.choice(actors['actors'])['id']), json={'name': 'Actor name updated - unittest', 'age': 30, gender: 'female' } )
+        res = self.client().put("/api/v1/actors/{}".format( random.choice(actors['actors'])['id']), json={'name': 'Actor name updated - unittest', 'age': 30, 'gender': 'female' } )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], True)
@@ -156,7 +156,7 @@ class CapstoneTestCase(unittest.TestCase):
 
     def test_delete_actor(self):
         """Test delete actor endpoint """
-        actor = self.client().post("/api/v1/actors", json={'name': 'Actor name - unittest', 'age': 40, gender: 'male' } )
+        actor = self.client().post("/api/v1/actors", json={'name': 'Actor name - unittest', 'age': 40, 'gender': 'male' } )
         res = self.client().get('/api/v1/actors')
         actors = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
@@ -173,6 +173,49 @@ class CapstoneTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['status'], False)
 
+
+    # Test RBAC roles
+    def test_view_movies_for_casting_assitant(self):
+        """Test list movies endpoint as casting assitant """
+        res = self.client().get('/api/v1/movies')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+
+    def test_create_movie_for_casting_assitant(self):
+        """Test create movie endpoint as casting assitant """
+        res = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest', 'release_date': '12/12/2020' } )
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 403)
+
+    def test_create_actor_for_casting_director(self):
+        """Test create actor endpoint as casting director """
+        res = self.client().post("/api/v1/actors", json={'name': 'Actor name - unittest', 'age': 40, 'gender': 'male' } )
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+
+    def test_create_movie_for_casting_director(self):
+        """Test create movie endpoint as casting director """
+        res = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest', 'release_date': '12/12/2020' } )
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 403)
+
+    def test_create_movie_for_executive_producer(self):
+        """Test create actor endpoint as executive producer """
+        res = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest', 'release_date': '12/12/2020' } )
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+
+    def test_delete_movie_for_executive_producer(self):
+        """Test delete actor endpoint as executive producer """
+        movie = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest executive producer', 'release_date': '12/12/2020' } )
+        res = self.client().get('/api/v1/movies')
+        movies = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client().delete("/api/v1/movies/{}".format( random.choice(movies['movies'])['id']))
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['status'], True)
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

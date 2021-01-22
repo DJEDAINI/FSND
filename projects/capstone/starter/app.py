@@ -3,8 +3,8 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import json
-from .models import db_drop_and_create_all, setup_db, Actor, Movie
-from .auth.auth import AuthError, requires_auth
+from models import db_drop_and_create_all, setup_db, Actor, Movie
+from auth.auth import AuthError, requires_auth
 
 def create_app(test_config=None):
   # create and configure the app
@@ -13,7 +13,7 @@ def create_app(test_config=None):
 
   return app
 
-APP = create_app()
+app = create_app()
 
 
 
@@ -54,13 +54,13 @@ def get_long_repr_movies():
 '''
     POST /movies
         - it should create a new row in the movies table
-        - it should require the 'post:movies' permission
+        - it should require the 'create:movies' permission
         - it should contain the movie.long() data representation
     returns status code 200 and json {"success": True, "movies": movie} where movie an array containing only the newly created movie
         or appropriate status code indicating reason for failure
 '''
 @app.route("/api/v1/movies", methods=['POST'])
-@requires_auth('post:movies')
+@requires_auth('create:movies')
 def create_movie():
     data = request.get_json(force=True)
     try:
@@ -156,13 +156,13 @@ def get_long_repr_actors():
 '''
     POST /actors
         - it should create a new row in the actors table
-        - it should require the 'post:actors' permission
+        - it should require the 'create:actors' permission
         - it should contain the actor.long() data representation
     returns status code 200 and json {"success": True, "actors": actor} where actor an array containing only the newly created actor
         or appropriate status code indicating reason for failure
 '''
 @app.route("/api/v1/actors", methods=['POST'])
-@requires_auth('post:actors')
+@requires_auth('create:actors')
 def create_actor():
     data = request.get_json(force=True)
     try:
@@ -276,4 +276,4 @@ def auth_error_handling(error):
     }), error.status_code
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

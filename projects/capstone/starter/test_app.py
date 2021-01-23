@@ -17,7 +17,7 @@ class CapstoneTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         # get your Auth Bearer token from somewhere
-        self.headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlJFVXdNMEZHTlVWQ09FSkNPVEkwTURsQlJqVkdPVFpDTmtZd1F6YzVNVFkyTmtFNVJUaERSQSJ9.eyJpc3MiOiJodHRwczovL2EtZGplZGFpbmkuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDVmYjYyZTQ4OWU5YWFkMDA3NjFkOTcwZCIsImF1ZCI6ImZzbmQiLCJpYXQiOjE2MTEzODg3NTcsImV4cCI6MTYxMTQ3NTE1NywiYXpwIjoiMVhpQlhCRUVDZmlRZjZqSnBOME9FNjB3dkxkcndGc08iLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImNyZWF0ZTphY3RvcnMiLCJjcmVhdGU6bW92aWVzIiwiZGVsZXRlOmFjdG9ycyIsImRlbGV0ZTptb3ZpZXMiLCJwYXRjaDphY3RvcnMiLCJwYXRjaDptb3ZpZXMiLCJ2aWV3OmFjdG9ycyIsInZpZXc6bW92aWVzIl19.OAMe-TPFxxGn-4gQcydqNC6jnUYJalZa_36fW2g8cEBq658WQG7QUKApPP3j_wpxqOWWnf9y4mUKj5nutux8HeK5Mx9HedO4CKY-dWsWQhGs8KogyC341elzuuflAskBSMkrjI1uWG-UZQtwLs9bqTRqvr0rbKz9E1i3iPLE-I2F7z7nGoSWWxx9xnO89IojeJtqoLDSkvtnPEWaOWMTCTGSwu6j8pOAaUqBwylT2TRCFkUjmjyPlSS6UgUsQ07wNJwd6poSl7z2um6MltzZXFfix7KDTOXxazS7OL8He1DAtHJXgpDN4OjGE5KL5hGdu6wL1khnwvg4_iQdFeKwCA'}
+        self.headers = {'Content-Type': 'application/json', 'Authorization': os.environ.get('PRODUCER')}
         self.database_path = "postgresql://{}:{}@{}:{}/{}".format(os.getenv("TEST_DB_USERNAME"), os.getenv("TEST_DB_PASSWD"), os.getenv("TEST_DB_HOST"), os.getenv("TEST_DB_PORT"), os.getenv("TEST_DB_NAME"))
         setup_db(self.app, self.database_path)
 
@@ -179,25 +179,25 @@ class CapstoneTestCase(unittest.TestCase):
     # Test RBAC roles
     def test_view_movies_for_casting_assitant(self):
         """Test list movies endpoint as casting assitant """
-        res = self.client().get('/api/v1/movies', headers={'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlJFVXdNMEZHTlVWQ09FSkNPVEkwTURsQlJqVkdPVFpDTmtZd1F6YzVNVFkyTmtFNVJUaERSQSJ9.eyJpc3MiOiJodHRwczovL2EtZGplZGFpbmkuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDVmYjYyZTcxOWU5YWFkMDA3NjFkOTcyZSIsImF1ZCI6ImZzbmQiLCJpYXQiOjE2MTEzODYyNTUsImV4cCI6MTYxMTQ3MjY1NSwiYXpwIjoiMVhpQlhCRUVDZmlRZjZqSnBOME9FNjB3dkxkcndGc08iLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbInZpZXc6YWN0b3JzIiwidmlldzptb3ZpZXMiXX0.EYQ1XyGZL9NvqE8ZYGudh-GFESn1W5Cv1u1WF0PYtKXmV6HCAhZRurMmvybCAZSEAp6OjBxILF2BsISHdSNHYVaM4DdeOAtaImmcLPzwoCXG1ugY7fHjICs2m6TodhhhXRzZcP4bEeCyqJDylgHPS5xKlUOcDU44wBXkk7ox25dk9V7cOiW0RHqr-lNSotgbG_e8lhAVWQzCbXQZDkkotcKpv9A03kMVgtxoAyUIWNBGbznVXZVoRJmYn6139NVIbFGBtP_WgUMMLiu1zvTe41JvQB4GyjLT3FeyMWTkI9420SRWTEEOi3gApW7b3PG6IUOoOPSplu2V1K34LS1z9A'})
+        res = self.client().get('/api/v1/movies', headers={'Authorization': os.environ.get('ASSISTANT')})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
 
     def test_create_movie_for_casting_assitant(self):
         """Test create movie endpoint as casting assitant """
-        res = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest', 'release_date': '12/12/2020' }, headers={'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlJFVXdNMEZHTlVWQ09FSkNPVEkwTURsQlJqVkdPVFpDTmtZd1F6YzVNVFkyTmtFNVJUaERSQSJ9.eyJpc3MiOiJodHRwczovL2EtZGplZGFpbmkuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDVmYjYyZTcxOWU5YWFkMDA3NjFkOTcyZSIsImF1ZCI6ImZzbmQiLCJpYXQiOjE2MTEzODYyNTUsImV4cCI6MTYxMTQ3MjY1NSwiYXpwIjoiMVhpQlhCRUVDZmlRZjZqSnBOME9FNjB3dkxkcndGc08iLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbInZpZXc6YWN0b3JzIiwidmlldzptb3ZpZXMiXX0.EYQ1XyGZL9NvqE8ZYGudh-GFESn1W5Cv1u1WF0PYtKXmV6HCAhZRurMmvybCAZSEAp6OjBxILF2BsISHdSNHYVaM4DdeOAtaImmcLPzwoCXG1ugY7fHjICs2m6TodhhhXRzZcP4bEeCyqJDylgHPS5xKlUOcDU44wBXkk7ox25dk9V7cOiW0RHqr-lNSotgbG_e8lhAVWQzCbXQZDkkotcKpv9A03kMVgtxoAyUIWNBGbznVXZVoRJmYn6139NVIbFGBtP_WgUMMLiu1zvTe41JvQB4GyjLT3FeyMWTkI9420SRWTEEOi3gApW7b3PG6IUOoOPSplu2V1K34LS1z9A'} )
+        res = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest', 'release_date': '12/12/2020' }, headers={'Authorization': os.environ.get('ASSISTANT')} )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 403)
 
     def test_create_actor_for_casting_director(self):
         """Test create actor endpoint as casting director """
-        res = self.client().post("/api/v1/actors", json={'name': 'Actor name - unittest', 'age': 40, 'gender': 'male' }, headers={'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlJFVXdNMEZHTlVWQ09FSkNPVEkwTURsQlJqVkdPVFpDTmtZd1F6YzVNVFkyTmtFNVJUaERSQSJ9.eyJpc3MiOiJodHRwczovL2EtZGplZGFpbmkuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDVmYjYxYTc4OWU5YWFkMDA3NjFkOGQ1ZiIsImF1ZCI6ImZzbmQiLCJpYXQiOjE2MTEzODg5OTEsImV4cCI6MTYxMTQ3NTM5MSwiYXpwIjoiMVhpQlhCRUVDZmlRZjZqSnBOME9FNjB3dkxkcndGc08iLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImNyZWF0ZTphY3RvcnMiLCJkZWxldGU6YWN0b3JzIiwicGF0Y2g6YWN0b3JzIiwicGF0Y2g6bW92aWVzIiwidmlldzphY3RvcnMiLCJ2aWV3Om1vdmllcyJdfQ.kDntaoEAfoJbVheC8RJOc_ydUwD8LpbzAYFB1dNzR0aF4Qlm6Xpr8lJsz3DVPuIKQyUIAlwsLd52fdo4tqhYENOdon_t5K-fF9ggJcWKTVc6TB46_C5VAPOgf1P1S9R6BXaQuptLQFKV9du5jEWP2yxjJlxuOXO9lIzztBNbTWC_ctrKGl-PfkggF3vYjiROjWjfI7kybEMSplZoN_0BOaixMoBDKrSJsZ6T2vHbRwJFJixdBB2iho2WHSc0dlADYrAOJuOgcY52JDks-B6j002mYtUfhCCU-Cxdd8sRBZFAVG-9E6a9PajDQ6jvfRc6UiKN86ufOULCufmlfluqGQ'} )
+        res = self.client().post("/api/v1/actors", json={'name': 'Actor name - unittest', 'age': 40, 'gender': 'male' }, headers={'Authorization': os.environ.get('DIRECTOR')} )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
 
     def test_create_movie_for_casting_director(self):
         """Test create movie endpoint as casting director """
-        res = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest', 'release_date': '12/12/2020' }, headers={'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlJFVXdNMEZHTlVWQ09FSkNPVEkwTURsQlJqVkdPVFpDTmtZd1F6YzVNVFkyTmtFNVJUaERSQSJ9.eyJpc3MiOiJodHRwczovL2EtZGplZGFpbmkuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDVmYjYxYTc4OWU5YWFkMDA3NjFkOGQ1ZiIsImF1ZCI6ImZzbmQiLCJpYXQiOjE2MTEzODg5OTEsImV4cCI6MTYxMTQ3NTM5MSwiYXpwIjoiMVhpQlhCRUVDZmlRZjZqSnBOME9FNjB3dkxkcndGc08iLCJzY29wZSI6IiIsInBlcm1pc3Npb25zIjpbImNyZWF0ZTphY3RvcnMiLCJkZWxldGU6YWN0b3JzIiwicGF0Y2g6YWN0b3JzIiwicGF0Y2g6bW92aWVzIiwidmlldzphY3RvcnMiLCJ2aWV3Om1vdmllcyJdfQ.kDntaoEAfoJbVheC8RJOc_ydUwD8LpbzAYFB1dNzR0aF4Qlm6Xpr8lJsz3DVPuIKQyUIAlwsLd52fdo4tqhYENOdon_t5K-fF9ggJcWKTVc6TB46_C5VAPOgf1P1S9R6BXaQuptLQFKV9du5jEWP2yxjJlxuOXO9lIzztBNbTWC_ctrKGl-PfkggF3vYjiROjWjfI7kybEMSplZoN_0BOaixMoBDKrSJsZ6T2vHbRwJFJixdBB2iho2WHSc0dlADYrAOJuOgcY52JDks-B6j002mYtUfhCCU-Cxdd8sRBZFAVG-9E6a9PajDQ6jvfRc6UiKN86ufOULCufmlfluqGQ'} )
+        res = self.client().post("/api/v1/movies", json={'title': 'Movie title - unittest', 'release_date': '12/12/2020' }, headers={'Authorization': os.environ.get('DIRECTOR')} )
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 403)
 

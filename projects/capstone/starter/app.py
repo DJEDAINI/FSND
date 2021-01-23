@@ -16,13 +16,14 @@ from models import (
 )
 from auth.auth import AuthError, requires_auth
 
-def create_app(test_config=None):
-  # create and configure the app
-  app = Flask(__name__)
-  setup_db(app)
-  CORS(app)
 
-  return app
+def create_app(test_config=None):
+    # create and configure the app
+    app = Flask(__name__)
+    setup_db(app)
+    CORS(app)
+
+    return app
 
 app = create_app()
 
@@ -37,22 +38,27 @@ DATA_PER_PAGE = 10
 '''
 Use the after_request decorator to set Access-Control-Allow
 '''
+
+
 @app.after_request
 def after_request(response):
-  response.headers['Access-Control-Allow-Origin']      = 'http://localhost:4200'
-  response.headers['Access-Control-Allow-Headers']     = 'Content-Type,Authorization'
-  response.headers['Access-Control-Allow-Methods']     = 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-  response.headers['Access-Control-Allow-Credentials'] = 'true'
-  return response
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:4200'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    return response
 
-## ROUTES
+# ROUTES
 '''
 GET /movies
     - public endpoint
     - contain only the movie.short() data representation
-    - returns status code 200 and json {"success": True, "movies": movies} where movies is the list of movies
+    - returns status code 200 and json {"success": True, "movies": movies}
+        where movies is the list of movies
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/movies")
 @requires_auth('view:movies')
 def get_long_repr_movies():
@@ -69,9 +75,12 @@ def get_long_repr_movies():
         - it should create a new row in the movies table
         - it should require the 'create:movies' permission
         - it should contain the movie.long() data representation
-    returns status code 200 and json {"success": True, "movies": movie} where movie an array containing only the newly created movie
+    returns status code 200 and json {"success": True, "movies": movie}
+        where movie an array containing only the newly created movie
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/movies", methods=['POST'])
 @requires_auth('create:movies')
 def create_movie():
@@ -97,9 +106,12 @@ def create_movie():
         it should update the corresponding row for <id>
         it should require the 'patch:movies' permission
         it should contain the movie.long() data representation
-    returns status code 200 and json {"success": True, "movies": movie} where movie an array containing only the updated movie
+    returns status code 200 and json {"success": True, "movies": movie}
+        where movie an array containing only the updated movie
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/movies/<int:movie_id>", methods=['PATCH'])
 @requires_auth('patch:movies')
 def update_movie(movie_id):
@@ -128,9 +140,12 @@ def update_movie(movie_id):
         - respond with a 404 error if <id> is not found
         - delete the corresponding row for <id>
         - require the 'delete:movies' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
+    returns status code 200 and json {"success": True, "delete": id}
+        where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/movies/<int:movie_id>", methods=['DELETE'])
 @requires_auth('delete:movies')
 def delete_movie(movie_id):
@@ -142,9 +157,9 @@ def delete_movie(movie_id):
         movie.delete()
 
         return jsonify({
-        'status': True,
-        'movie': movie_id,
-        'message': 'movie deleted with success',
+            'status': True,
+            'movie': movie_id,
+            'message': 'movie deleted with success',
         })
     except Exception:
         abort(422)
@@ -153,9 +168,12 @@ def delete_movie(movie_id):
 GET /actors
     - public endpoint
     - contain only the actor.short() data representation
-    - returns status code 200 and json {"success": True, "actors": actors} where actors is the list of actors
+    - returns status code 200 and json {"success": True, "actors": actors}
+        where actors is the list of actors
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/actors")
 @requires_auth('view:actors')
 def get_long_repr_actors():
@@ -172,9 +190,12 @@ def get_long_repr_actors():
         - it should create a new row in the actors table
         - it should require the 'create:actors' permission
         - it should contain the actor.long() data representation
-    returns status code 200 and json {"success": True, "actors": actor} where actor an array containing only the newly created actor
+    returns status code 200 and json {"success": True, "actors": actor}
+        where actor an array containing only the newly created actor
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/actors", methods=['POST'])
 @requires_auth('create:actors')
 def create_actor():
@@ -201,9 +222,12 @@ def create_actor():
         it should update the corresponding row for <id>
         it should require the 'patch:actors' permission
         it should contain the actor.long() data representation
-    returns status code 200 and json {"success": True, "actors": actor} where actor an array containing only the updated actor
+    returns status code 200 and json {"success": True, "actors": actor}
+        where actor an array containing only the updated actor
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/actors/<int:actor_id>", methods=['PATCH'])
 @requires_auth('patch:actors')
 def update_actor(actor_id):
@@ -234,9 +258,12 @@ def update_actor(actor_id):
         - respond with a 404 error if <id> is not found
         - delete the corresponding row for <id>
         - require the 'delete:actors' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
+    returns status code 200 and json {"success": True, "delete": id}
+        where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route("/api/v1/actors/<int:actor_id>", methods=['DELETE'])
 @requires_auth('delete:actors')
 def delete_actor(actor_id):
@@ -248,21 +275,23 @@ def delete_actor(actor_id):
         actor.delete()
 
         return jsonify({
-        'status': True,
-        'actor': actor_id,
-        'message': 'actor deleted with success',
+            'status': True,
+            'actor': actor_id,
+            'message': 'actor deleted with success',
         })
     except Exception:
         abort(422)
 
-## Error Handling
+# Error Handling
 '''
 Example error handling for unprocessable entity
 '''
+
+
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
-        "status": False, 
+        "status": False,
         "error": 422,
         "message": "unprocessable"
     }), 422
@@ -270,10 +299,12 @@ def unprocessable(error):
 '''
 Example error handling for unprocessable entity
 '''
+
+
 @app.errorhandler(400)
 def bad_request(error):
     return jsonify({
-        "status": False, 
+        "status": False,
         "error": 400,
         "message": "bad_request "
     }), 400
@@ -281,10 +312,12 @@ def bad_request(error):
 '''
 Error handling for resource not found
 '''
+
+
 @app.errorhandler(404)
 def unprocessable(error):
     return jsonify({
-        "status": False, 
+        "status": False,
         "error": 404,
         "message": "resource not found"
     }), 404
@@ -292,10 +325,12 @@ def unprocessable(error):
 '''
 Error handler for AuthError
 '''
+
+
 @app.errorhandler(AuthError)
 def auth_error_handling(error):
     return jsonify({
-        "status": False, 
+        "status": False,
         "error": error.status_code,
         "message": error.error['description']
     }), error.status_code

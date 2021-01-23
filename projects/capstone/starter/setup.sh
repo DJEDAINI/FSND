@@ -1,4 +1,4 @@
-export DATABASE_URL='demo_value_1'
+export DATABASE_URL='postgresql://postgres:toor@127.0.0.1:5432/capstone'
 export AUTH0_DOMAIN='a-djedaini.auth0.com'
 export ALGORITHMS=['RS256']
 export API_AUDIENCE='fsnd'

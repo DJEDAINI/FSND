@@ -42,6 +42,11 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
 
+actors_movies = db.Table('actors_movies',
+    db.Column('actor_id', db.Integer, db.ForeignKey('actors.id'), primary_key=True),
+    db.Column('movie_id', db.Integer, db.ForeignKey('movies.id'), primary_key=True)
+)
+
 '''
 Movie
 '''
@@ -53,6 +58,8 @@ class Movie(db.Model):
     id = Column(Integer, primary_key=True)
     title = Column(String)
     release_date = Column(String)
+    actors = db.relationship('Actor', secondary=actors_movies, lazy='subquery',
+        backref=db.backref('movies', lazy=True))
 
     def __init__(self, title, release_date):
         self.title = title
@@ -89,6 +96,8 @@ class Actor(db.Model):
     name = Column(String)
     age = Column(String)
     gender = Column(String)
+    movies = db.relationship('Movie', secondary=actors_movies, lazy='subquery',
+        backref=db.backref('actors', lazy=True))
 
     def __init__(self, type):
         self.type = type

@@ -348,6 +348,7 @@ class CapstoneTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['status'], True)
 
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()

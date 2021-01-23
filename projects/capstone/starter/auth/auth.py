@@ -62,6 +62,7 @@ def get_token_auth_header():
     token = parts[1]
     return token
 
+
 '''
     @INPUTS
         permission: string permission (i.e. 'post:drink')
@@ -87,6 +88,7 @@ def check_permissions(permission, payload):
             'description': 'Unauthorized access.'
         }, 401)
     return True
+
 
 '''
     @INPUTS

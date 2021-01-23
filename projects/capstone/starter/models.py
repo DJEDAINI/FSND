@@ -29,6 +29,7 @@ def setup_db(app, database_path=database_path):
     db.init_app(app)
     db.create_all()
 
+
 '''
 db_drop_and_create_all()
     drops the database tables and starts fresh
@@ -42,10 +43,23 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
 
-actors_movies = db.Table('actors_movies',
-    db.Column('actor_id', db.Integer, db.ForeignKey('actors.id'), primary_key=True),
-    db.Column('movie_id', db.Integer, db.ForeignKey('movies.id'), primary_key=True)
-)
+
+actors_movies = db.Table(
+                    'actors_movies',
+                    db.Column(
+                        'actor_id',
+                        db.Integer,
+                        db.ForeignKey('actors.id'),
+                        primary_key=True
+                    ),
+                    db.Column(
+                        'movie_id',
+                        db.Integer,
+                        db.ForeignKey('movies.id'),
+                        primary_key=True
+                    )
+                )
+
 
 '''
 Movie
@@ -58,8 +72,12 @@ class Movie(db.Model):
     id = Column(Integer, primary_key=True)
     title = Column(String)
     release_date = Column(String)
-    actors = db.relationship('Actor', secondary=actors_movies, lazy='subquery',
-        backref=db.backref('actors_movies', lazy=True))
+    actors = db.relationship(
+                'Actor',
+                secondary=actors_movies,
+                lazy='subquery',
+                backref=db.backref('actors_movies', lazy=True)
+            )
 
     def __init__(self, title, release_date):
         self.title = title
@@ -83,6 +101,7 @@ class Movie(db.Model):
             'release_date': self.release_date
         }
 
+
 '''
 Actor
 
@@ -96,8 +115,12 @@ class Actor(db.Model):
     name = Column(String)
     age = Column(String)
     gender = Column(String)
-    movies = db.relationship('Movie', secondary=actors_movies, lazy='subquery',
-        backref=db.backref('actors_movies', lazy=True))
+    movies = db.relationship(
+                'Movie',
+                secondary=actors_movies,
+                lazy='subquery',
+                backref=db.backref('actors_movies', lazy=True)
+            )
 
     def __init__(self, name, age, gender):
         self.name = name
@@ -114,7 +137,7 @@ class Actor(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-        
+
     def format(self):
         return {
             'id': self.id,

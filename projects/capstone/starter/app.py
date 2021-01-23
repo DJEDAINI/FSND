@@ -25,6 +25,7 @@ def create_app(test_config=None):
 
     return app
 
+
 app = create_app()
 
 DATA_PER_PAGE = 10
@@ -43,10 +44,13 @@ Use the after_request decorator to set Access-Control-Allow
 @app.after_request
 def after_request(response):
     response.headers['Access-Control-Allow-Origin'] = 'http://localhost:4200'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
-    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+    response.headers['Access-Control-Allow-Headers']\
+        = 'Content-Type,Authorization'
+    response.headers['Access-Control-Allow-Methods']\
+        = 'GET,POST,PATCH,DELETE,OPTIONS'
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     return response
+
 
 # ROUTES
 '''
@@ -70,6 +74,7 @@ def get_long_repr_movies():
       'movies': formatted_movies,
       'total_movies': movies.total
     })
+
 
 '''
     POST /movies
@@ -99,6 +104,7 @@ def create_movie():
         })
     except Exception:
         abort(422)
+
 
 '''
     PATCH /movies/<id>
@@ -136,6 +142,7 @@ def update_movie(movie_id):
     # except:
     #     abort(422)
 
+
 '''
     DELETE /movies/<id> where <id> is the existing model id
         - respond with a 404 error if <id> is not found
@@ -165,6 +172,7 @@ def delete_movie(movie_id):
     except Exception:
         abort(422)
 
+
 '''
 GET /actors
     - public endpoint
@@ -186,6 +194,7 @@ def get_long_repr_actors():
       'actors': formatted_actors,
       'total_actors': actors.total
     })
+
 
 '''
     POST /actors
@@ -216,6 +225,7 @@ def create_actor():
         })
     except Exception:
         abort(422)
+
 
 '''
     PATCH /actors/<id>
@@ -255,6 +265,7 @@ def update_actor(actor_id):
     # except:
     #     abort(422)
 
+
 '''
     DELETE /actors/<id> where <id> is the existing model id
         - respond with a 404 error if <id> is not found
@@ -284,6 +295,7 @@ def delete_actor(actor_id):
     except Exception:
         abort(422)
 
+
 # Error Handling
 '''
 Example error handling for unprocessable entity
@@ -298,6 +310,7 @@ def unprocessable(error):
         "message": "unprocessable"
     }), 422
 
+
 '''
 Example error handling for bad request
 '''
@@ -310,6 +323,7 @@ def bad_request(error):
         "error": 400,
         "message": "bad_request"
     }), 400
+
 
 '''
 Error handling for resource not found
@@ -324,6 +338,7 @@ def unprocessable(error):
         "message": "resource not found"
     }), 404
 
+
 '''
 Error handling for method not allowed
 '''
@@ -337,6 +352,7 @@ def unprocessable(error):
         "message": "method not allowed"
     }), 405
 
+
 '''
 Error handler for AuthError
 '''
@@ -349,6 +365,7 @@ def auth_error_handling(error):
         "error": error.status_code,
         "message": error.error['description']
     }), error.status_code
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

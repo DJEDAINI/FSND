@@ -77,8 +77,8 @@ def get_long_repr_movies():
 def create_movie():
     data = request.get_json(force=True)
     try:
-        title = data.get('title', None)
-        release_date = data.get('release_date', None)
+        title = data.get('title')
+        release_date = data.get('release_date')
         if None in [title, release_date]:
             abort(422)
         movie = Movie(title=title, release_date=release_date)
@@ -87,7 +87,7 @@ def create_movie():
             'status': True,
             'movies': [movie.long()],
         })
-    except:
+    except Exception:
         abort(422)
 
 '''
@@ -146,7 +146,7 @@ def delete_movie(movie_id):
         'movie': movie_id,
         'message': 'movie deleted with success',
         })
-    except:
+    except Exception:
         abort(422)
 
 '''
@@ -180,9 +180,9 @@ def get_long_repr_actors():
 def create_actor():
     data = request.get_json(force=True)
     try:
-        name = data.get('name', None)
-        age = data.get('age', None)
-        gender = data.get('gender', None)
+        name = data.get('name')
+        age = data.get('age')
+        gender = data.get('gender')
         if None in [name, age, gender]:
             abort(422)
         actor = Actor(name=name, age=age, gender=gender)
@@ -191,7 +191,7 @@ def create_actor():
             'status': True,
             'actors': [actor.long()],
         })
-    except:
+    except Exception:
         abort(422)
 
 '''
@@ -252,7 +252,7 @@ def delete_actor(actor_id):
         'actor': actor_id,
         'message': 'actor deleted with success',
         })
-    except:
+    except Exception:
         abort(422)
 
 ## Error Handling
@@ -266,6 +266,17 @@ def unprocessable(error):
         "error": 422,
         "message": "unprocessable"
     }), 422
+
+'''
+Example error handling for unprocessable entity
+'''
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({
+        "status": False, 
+        "error": 400,
+        "message": "bad_request "
+    }), 400
 
 '''
 Error handling for resource not found

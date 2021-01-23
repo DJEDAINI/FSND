@@ -19,10 +19,10 @@ Follow instructions to install the latest version of python for your platform in
 
 #### PIP Dependencies
 
-In the warranty-tracker directory, run the following to install all necessary dependencies:
+In the capstone/starter directory, run the following to install all necessary dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 This will install all of the required packages.

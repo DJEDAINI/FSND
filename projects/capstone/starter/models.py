@@ -59,7 +59,7 @@ class Movie(db.Model):
     title = Column(String)
     release_date = Column(String)
     actors = db.relationship('Actor', secondary=actors_movies, lazy='subquery',
-        backref=db.backref('movies', lazy=True))
+        backref=db.backref('actors_movies', lazy=True))
 
     def __init__(self, title, release_date):
         self.title = title
@@ -97,7 +97,7 @@ class Actor(db.Model):
     age = Column(String)
     gender = Column(String)
     movies = db.relationship('Movie', secondary=actors_movies, lazy='subquery',
-        backref=db.backref('actors', lazy=True))
+        backref=db.backref('actors_movies', lazy=True))
 
     def __init__(self, type):
         self.type = type

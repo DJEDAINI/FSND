@@ -64,10 +64,11 @@ GET /movies
 def get_long_repr_movies():
     page = request.args.get('page', 1, type=int)
     movies = Movie.query.paginate(page, DATA_PER_PAGE, False)
-    formatted_movies = [movie.long() for movie in movies]
+    formatted_movies = [movie.long() for movie in movies.items]
     return jsonify({
       'status': True,
-      'movies': formatted_movies
+      'movies': formatted_movies,
+      'total_movies': movies.total
     })
 
 '''
@@ -179,10 +180,11 @@ GET /actors
 def get_long_repr_actors():
     page = request.args.get('page', 1, type=int)
     actors = Actor.query.paginate(page, DATA_PER_PAGE, False)
-    formatted_actors = [actor.long() for actor in actors]
+    formatted_actors = [actor.long() for actor in actors.items]
     return jsonify({
       'status': True,
-      'actors': formatted_actors
+      'actors': formatted_actors,
+      'total_actors': actors.total
     })
 
 '''
@@ -297,7 +299,7 @@ def unprocessable(error):
     }), 422
 
 '''
-Example error handling for unprocessable entity
+Example error handling for bad request
 '''
 
 
@@ -306,7 +308,7 @@ def bad_request(error):
     return jsonify({
         "status": False,
         "error": 400,
-        "message": "bad_request "
+        "message": "bad_request"
     }), 400
 
 '''
@@ -321,6 +323,19 @@ def unprocessable(error):
         "error": 404,
         "message": "resource not found"
     }), 404
+
+'''
+Error handling for method not allowed
+'''
+
+
+@app.errorhandler(405)
+def unprocessable(error):
+    return jsonify({
+        "status": False,
+        "error": 405,
+        "message": "method not allowed"
+    }), 405
 
 '''
 Error handler for AuthError

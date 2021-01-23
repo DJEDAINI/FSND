@@ -1,9 +1,19 @@
 import os
-from flask import Flask, request, abort, jsonify
+from flask import (
+  Flask,
+  request,
+  jsonify,
+  abort
+)
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import json
-from models import db_drop_and_create_all, setup_db, Actor, Movie
+from models import (
+    db_drop_and_create_all,
+    setup_db,
+    Actor,
+    Movie
+)
 from auth.auth import AuthError, requires_auth
 
 def create_app(test_config=None):
@@ -16,6 +26,7 @@ def create_app(test_config=None):
 
 app = create_app()
 
+DATA_PER_PAGE = 10
 
 
 '''
@@ -45,7 +56,8 @@ GET /movies
 @app.route("/api/v1/movies")
 @requires_auth('view:movies')
 def get_long_repr_movies():
-    movies = Movie.query.all()
+    page = request.args.get('page', 1, type=int)
+    movies = Movie.query.paginate(page, DATA_PER_PAGE, False)
     formatted_movies = [movie.long() for movie in movies]
     return jsonify({
       'status': True,
@@ -147,7 +159,8 @@ GET /actors
 @app.route("/api/v1/actors")
 @requires_auth('view:actors')
 def get_long_repr_actors():
-    actors = Actor.query.all()
+    page = request.args.get('page', 1, type=int)
+    actors = Actor.query.paginate(page, DATA_PER_PAGE, False)
     formatted_actors = [actor.long() for actor in actors]
     return jsonify({
       'status': True,

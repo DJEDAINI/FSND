@@ -1,6 +1,7 @@
 import os
 from sqlalchemy import Column, String, Integer, create_engine, Table, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 import json
 
@@ -29,12 +30,6 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
 
-Base = declarative_base()
-
-association_table = Table('movies_actors', Base.metadata,
-  Column('movie_id', Integer, ForeignKey('movies.id')),
-  Column('actor_id', Integer, ForeignKey('actors.id'))
-)
 '''
 Movie
 '''
@@ -44,10 +39,7 @@ class Movie(db.Model):
   id = Column(Integer, primary_key=True)
   title = Column(String)
   release_date = Column(String)
-  children = db.relationship(
-    "Actor",
-    secondary=association_table,
-    back_populates="movies")
+
 
   def __init__(self, title, release_date):
     self.title = title
@@ -82,10 +74,6 @@ class Actor(db.Model):
   name = Column(String)
   age = Column(String)
   gender = Column(String)
-  parents = db.relationship(
-    "Movie",
-    secondary=association_table,
-    back_populates="actors")
 
   def __init__(self, type):
     self.type = type

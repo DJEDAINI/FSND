@@ -290,14 +290,13 @@ Example error handling for unprocessable entity
 '''
 
 
-# @app.errorhandler(422)
-# def unprocessable(error):
-#     print(error)
-#     return jsonify({
-#         "status": False,
-#         "error": 422,
-#         "message": "unprocessable"
-#     }), 422
+@app.errorhandler(422)
+def unprocessable(error):
+    return jsonify({
+        "status": False,
+        "error": 422,
+        "message": "unprocessable"
+    }), 422
 
 '''
 Example error handling for bad request
@@ -306,7 +305,6 @@ Example error handling for bad request
 
 @app.errorhandler(400)
 def bad_request(error):
-    print(error)
     return jsonify({
         "status": False,
         "error": 400,

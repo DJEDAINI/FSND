@@ -64,7 +64,7 @@ GET /movies
 def get_long_repr_movies():
     page = request.args.get('page', 1, type=int)
     movies = Movie.query.paginate(page, DATA_PER_PAGE, False)
-    formatted_movies = [movie.long() for movie in movies.items]
+    formatted_movies = [movie.format() for movie in movies.items]
     return jsonify({
       'status': True,
       'movies': formatted_movies,
@@ -75,7 +75,7 @@ def get_long_repr_movies():
     POST /movies
         - it should create a new row in the movies table
         - it should require the 'create:movies' permission
-        - it should contain the movie.long() data representation
+        - it should contain the movie.format() data representation
     returns status code 200 and json {"success": True, "movies": movie}
         where movie an array containing only the newly created movie
         or appropriate status code indicating reason for failure
@@ -95,7 +95,7 @@ def create_movie():
         movie.insert()
         return jsonify({
             'status': True,
-            'movies': [movie.long()],
+            'movies': [movie.format()],
         })
     except Exception:
         abort(422)
@@ -106,7 +106,7 @@ def create_movie():
         it should respond with a 404 error if <id> is not found
         it should update the corresponding row for <id>
         it should require the 'patch:movies' permission
-        it should contain the movie.long() data representation
+        it should contain the movie.format() data representation
     returns status code 200 and json {"success": True, "movies": movie}
         where movie an array containing only the updated movie
         or appropriate status code indicating reason for failure
@@ -131,7 +131,7 @@ def update_movie(movie_id):
     movie.update()
     return jsonify({
         'status': True,
-        'movies': [movie.long()],
+        'movies': [movie.format()],
     })
     # except:
     #     abort(422)
@@ -180,7 +180,7 @@ GET /actors
 def get_long_repr_actors():
     page = request.args.get('page', 1, type=int)
     actors = Actor.query.paginate(page, DATA_PER_PAGE, False)
-    formatted_actors = [actor.long() for actor in actors.items]
+    formatted_actors = [actor.format() for actor in actors.items]
     return jsonify({
       'status': True,
       'actors': formatted_actors,
@@ -191,7 +191,7 @@ def get_long_repr_actors():
     POST /actors
         - it should create a new row in the actors table
         - it should require the 'create:actors' permission
-        - it should contain the actor.long() data representation
+        - it should contain the actor.format() data representation
     returns status code 200 and json {"success": True, "actors": actor}
         where actor an array containing only the newly created actor
         or appropriate status code indicating reason for failure
@@ -212,7 +212,7 @@ def create_actor():
         actor.insert()
         return jsonify({
             'status': True,
-            'actors': [actor.long()],
+            'actors': [actor.format()]
         })
     except Exception:
         abort(422)
@@ -223,7 +223,7 @@ def create_actor():
         it should respond with a 404 error if <id> is not found
         it should update the corresponding row for <id>
         it should require the 'patch:actors' permission
-        it should contain the actor.long() data representation
+        it should contain the actor.format() data representation
     returns status code 200 and json {"success": True, "actors": actor}
         where actor an array containing only the updated actor
         or appropriate status code indicating reason for failure
@@ -250,7 +250,7 @@ def update_actor(actor_id):
     actor.update()
     return jsonify({
         'status': True,
-        'actors': [actor.long()],
+        'actors': [actor.format()],
     })
     # except:
     #     abort(422)
@@ -290,13 +290,14 @@ Example error handling for unprocessable entity
 '''
 
 
-@app.errorhandler(422)
-def unprocessable(error):
-    return jsonify({
-        "status": False,
-        "error": 422,
-        "message": "unprocessable"
-    }), 422
+# @app.errorhandler(422)
+# def unprocessable(error):
+#     print(error)
+#     return jsonify({
+#         "status": False,
+#         "error": 422,
+#         "message": "unprocessable"
+#     }), 422
 
 '''
 Example error handling for bad request
@@ -305,6 +306,7 @@ Example error handling for bad request
 
 @app.errorhandler(400)
 def bad_request(error):
+    print(error)
     return jsonify({
         "status": False,
         "error": 400,

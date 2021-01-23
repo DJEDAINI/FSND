@@ -99,9 +99,22 @@ class Actor(db.Model):
     movies = db.relationship('Movie', secondary=actors_movies, lazy='subquery',
         backref=db.backref('actors_movies', lazy=True))
 
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, name, age, gender):
+        self.name = name
+        self.age = age
+        self.gender = gender
 
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+        
     def format(self):
         return {
             'id': self.id,
